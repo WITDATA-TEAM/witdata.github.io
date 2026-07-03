@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Witdata · Antes de la IA, el dato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#4871B1;
+    --green:#359A4F;
+    --blue-soft:#B6C6E0;
+    --green-soft:#AED7B9;
+    --ink:#0E1116;
+    --ink-2:#161B22;
+    --grey:#4D4D4D;
+    --paper:#F4F5F7;
+    --white:#FFFFFF;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Montserrat', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:var(--sans);
+    background:var(--ink);
+    color:var(--white);
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--green);color:var(--white);}
+
+  a{color:inherit;}
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    opacity:0.65;
+    display:inline-block;
+    margin-bottom:1.1rem;
+  }
+  .eyebrow::before{content:"◆ ";color:var(--green);}
+
+  section{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    padding:6vh 8vw;
+  }
+
+  /* ---------- progress rail ---------- */
+  #rail{
+    position:fixed;
+    right:22px;
+    top:50%;
+    transform:translateY(-50%);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    z-index:50;
+  }
+  #rail .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:rgba(255,255,255,0.25);
+    transition:all .35s ease;
+    cursor:pointer;
+  }
+  #rail .dot.active{
+    background:var(--green);
+    box-shadow:0 0 0 4px rgba(53,154,79,0.18);
+  }
+
+  /* ================= HERO ================= */
+  #hero{
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(72,113,177,0.25), transparent 55%),
+      radial-gradient(ellipse at 80% 80%, rgba(53,154,79,0.18), transparent 55%),
+      var(--ink);
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+  }
+  #particle-hero{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+  }
+  .hero-content{
+    position:relative;
+    z-index:2;
+    max-width:920px;
+  }
+  h1.display{
+    font-size:clamp(2.4rem, 6vw, 4.6rem);
+    font-weight:800;
+    line-height:1.04;
+    letter-spacing:-0.02em;
+  }
+  h1.display .thin{
+    font-weight:400;
+    color:rgba(255,255,255,0.55);
+  }
+  h1.display .accent{
+    color:var(--green-soft);
+  }
+  .hero-sub{
+    margin-top:1.8rem;
+    font-size:1.15rem;
+    line-height:1.6;
+    color:rgba(255,255,255,0.72);
+    max-width:640px;
+  }
+  .scroll-cue{
+    position:absolute;
+    bottom:5vh;
+    left:8vw;
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.12em;
+    color:rgba(255,255,255,0.45);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .scroll-cue .line{
+    width:32px;height:1px;background:rgba(255,255,255,0.35);
+    position:relative;overflow:hidden;
+  }
+  .scroll-cue .line::after{
+    content:"";position:absolute;left:-100%;top:0;bottom:0;width:100%;
+    background:var(--green);
+    animation:cue 1.8s ease-in-out infinite;
+  }
+  @keyframes cue{ to{ left:100%; } }
+
+  /* ================= SECTION SHARED ================= */
+  .kicker-row{
+    display:flex;
+    align-items:baseline;
+    gap:1.4rem;
+    margin-bottom:2.4rem;
+  }
+  .kicker-row .num{
+    font-family:var(--mono);
+    font-size:0.85rem;
+    color:var(--green-soft);
+    letter-spacing:0.08em;
+  }
+  h2.display{
+    font-size:clamp(1.9rem, 3.6vw, 3rem);
+    font-weight:800;
+    line-height:1.12;
+    letter-spacing:-0.015em;
+    max-width:760px;
+  }
+  h2.display .thin{font-weight:400;color:rgba(255,255,255,0.5);}
+  p.lede{
+    font-size:1.05rem;
+    line-height:1.7;
+    color:rgba(255,255,255,0.68);
+    max-width:620px;
+    margin-top:1.2rem;
+  }
+
+  .reveal{
+    opacity:0;
+    transform:translateY(28px);
+    transition:opacity .8s ease, transform .8s ease;
+  }
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* ================= PROBLEMA (data caótica) ================= */
+  #problema{
+    background:var(--ink-2);
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .mess-grid{
+    margin-top:3rem;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:1.1rem;
+    width:100%;
+    max-width:1100px;
+  }
+  .mess-card{
+    background:rgba(255,255,255,0.035);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;
+    padding:1.3rem 1.4rem;
+    font-family:var(--mono);
+    font-size:0.82rem;
+    line-height:1.65;
+    color:rgba(255,255,255,0.6);
+    position:relative;
+    transform:rotate(var(--rot,0deg));
+  }
+  .mess-card .tag{
+    display:inline-block;
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:0.68rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#E38B7A;
+    background:rgba(227,139,122,0.12);
+    padding:3px 9px;
+    border-radius:20px;
+    margin-bottom:0.7rem;
+  }
+  .mess-card b{color:rgba(255,255,255,0.9);font-family:var(--sans);}
+
+  /* ================= FALLA IA ================= */
+  #falla{
+    background:var(--ink);
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .chat-mock{
+    margin-top:2.6rem;
+    width:100%;
+    max-width:640px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:16px;
+    padding:1.6rem;
+  }
+  .bubble{
+    max-width:80%;
+    padding:0.9rem 1.1rem;
+    border-radius:12px;
+    font-size:0.92rem;
+    line-height:1.55;
+    margin-bottom:0.9rem;
+  }
+  .bubble.user{
+    background:rgba(182,198,224,0.12);
+    margin-left:auto;
+    border-bottom-right-radius:3px;
+    color:rgba(255,255,255,0.85);
+  }
+  .bubble.ai{
+    background:rgba(227,139,122,0.1);
+    border:1px solid rgba(227,139,122,0.25);
+    border-bottom-left-radius:3px;
+    color:rgba(255,255,255,0.8);
+  }
+  .bubble.ai .flag{
+    display:block;
+    font-family:var(--mono);
+    font-size:0.68rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#E38B7A;
+    margin-bottom:0.4rem;
+  }
+
+  /* ================= SIGNATURE: TRANSFORMACIÓN ================= */
+  #transformacion{
+    background:var(--ink);
+    flex-direction:column;
+    justify-content:center;
+    min-height:150vh;
+    padding-top:10vh;
+    padding-bottom:10vh;
+  }
+  .transform-copy{
+    position:relative;
+    z-index:2;
+    max-width:640px;
+    margin-bottom:2rem;
+  }
+  #canvas-wrap{
+    position:relative;
+    width:100%;
+    max-width:900px;
+    aspect-ratio:16/10;
+    margin:0 auto;
+    border-radius:18px;
+    overflow:hidden;
+    background:radial-gradient(circle at 50% 50%, rgba(72,113,177,0.08), transparent 70%);
+    border:1px solid rgba(255,255,255,0.07);
+  }
+  #transformCanvas{
+    display:block;
+    width:100%;
+    height:100%;
+  }
+  .transform-label{
+    position:absolute;
+    bottom:18px;
+    left:0;right:0;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.1em;
+    color:rgba(255,255,255,0.4);
+    text-transform:uppercase;
+    transition:opacity .5s ease;
+  }
+  .progress-track{
+    max-width:900px;
+    margin:1.4rem auto 0;
+    height:3px;
+    background:rgba(255,255,255,0.08);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--blue), var(--green));
+  }
+
+  /* ================= RESULTADO ================= */
+  #resultado{
+    background:var(--paper);
+    color:var(--ink);
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  #resultado .eyebrow{color:var(--blue);opacity:1;}
+  #resultado .eyebrow::before{color:var(--green);}
+  #resultado h2.display{color:var(--ink);}
+  #resultado h2.display .thin{color:var(--grey);}
+  #resultado p.lede{color:var(--grey);}
+
+  .cases{
+    margin-top:3rem;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:1.6rem;
+    width:100%;
+    max-width:1180px;
+  }
+  .case{
+    background:var(--white);
+    border-radius:14px;
+    padding:1.9rem;
+    border:1px solid rgba(0,0,0,0.06);
+    box-shadow:0 1px 2px rgba(16,24,40,0.04);
+  }
+  .case .idx{
+    font-family:var(--mono);
+    font-size:0.75rem;
+    color:var(--green);
+    letter-spacing:0.06em;
+  }
+  .case h3{
+    font-size:1.15rem;
+    margin:0.6rem 0 0.7rem;
+    color:var(--ink);
+  }
+  .case p{
+    font-size:0.92rem;
+    line-height:1.6;
+    color:var(--grey);
+  }
+  .case .before-after{
+    margin-top:1rem;
+    display:flex;
+    gap:0.6rem;
+    font-family:var(--mono);
+    font-size:0.72rem;
+  }
+  .case .before-after span{
+    padding:3px 9px;
+    border-radius:20px;
+  }
+  .case .before-after .before{background:rgba(227,139,122,0.12);color:#B5583F;}
+  .case .before-after .after{background:rgba(53,154,79,0.12);color:var(--green);}
+
+  /* ================= CIERRE ================= */
+  #cierre{
+    background:var(--ink);
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    background:
+      radial-gradient(ellipse at 70% 30%, rgba(53,154,79,0.18), transparent 55%),
+      var(--ink);
+  }
+  .logo-mark{
+    width:64px;height:64px;
+    margin-bottom:2rem;
+  }
+  .cierre-cta{
+    margin-top:2.4rem;
+    display:flex;
+    gap:1rem;
+    flex-wrap:wrap;
+  }
+  .btn{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:0.92rem;
+    padding:0.95rem 1.7rem;
+    border-radius:8px;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .btn.primary{
+    background:var(--green);
+    color:var(--white);
+  }
+  .btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(53,154,79,0.35);}
+  .btn.ghost{
+    border:1px solid rgba(255,255,255,0.25);
+    color:var(--white);
+  }
+  .btn.ghost:hover{border-color:var(--green-soft);}
+  footer{
+    margin-top:4rem;
+    font-family:var(--mono);
+    font-size:0.72rem;
+    color:rgba(255,255,255,0.35);
+  }
+
+  @media (max-width:720px){
+    section{padding:8vh 6vw;}
+    #rail{display:none;}
+    .mess-card{transform:none !important;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    .reveal{transition:none;opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<div id="rail" aria-hidden="true">
+  <div class="dot" data-target="hero"></div>
+  <div class="dot" data-target="problema"></div>
+  <div class="dot" data-target="falla"></div>
+  <div class="dot" data-target="transformacion"></div>
+  <div class="dot" data-target="resultado"></div>
+  <div class="dot" data-target="cierre"></div>
+</div>
+
+<!-- ============ HERO ============ -->
+<section id="hero">
+  <canvas id="particle-hero"></canvas>
+  <div class="hero-content">
+    <span class="eyebrow">Witdata · Inteligencia Artificial aplicada</span>
+    <h1 class="display">
+      Tu IA no falla<br>
+      <span class="thin">por el modelo.</span><br>
+      Falla <span class="accent">por el dato.</span>
+    </h1>
+    <p class="hero-sub">
+      Antes de sumar un agente, un dashboard o un asistente con IA a tu empresa, hay un paso que casi nadie muestra: ordenar la materia prima. Esto es lo que aprendimos ayudando a industrias de LATAM a hacerlo bien.
+    </p>
+  </div>
+  <div class="scroll-cue"><span class="line"></span> Desplazate para ver el proceso</div>
+</section>
+
+<!-- ============ PROBLEMA ============ -->
+<section id="problema">
+  <div class="kicker-row reveal">
+    <span class="num">01</span>
+    <span class="eyebrow" style="margin:0">El punto de partida real</span>
+  </div>
+  <h2 class="display reveal">
+    Tus datos no viven ordenados. <span class="thin">Viven repartidos.</span>
+  </h2>
+  <p class="lede reveal">
+    En una PyME industrial típica, la información de un mismo pedido puede estar en cuatro lugares distintos, escrita de cuatro formas distintas. Ninguna herramienta de IA puede razonar bien sobre eso todavía.
+  </p>
+
+  <div class="mess-grid">
+    <div class="mess-card reveal" style="--rot:-1.2deg">
+      <span class="tag">Planilla de stock</span>
+      Producto: <b>"Válvula 3/4 GALV"</b><br>
+      Producto: <b>"VALV. 3/4" GALVANIZ."</b><br>
+      Producto: <b>"valvula tres cuartos"</b>
+    </div>
+    <div class="mess-card reveal" style="--rot:0.8deg">
+      <span class="tag">Fechas</span>
+      12/06/2026<br>
+      2026-06-12<br>
+      12-jun<br>
+      <span style="opacity:.6">→ misma entrega, tres formatos</span>
+    </div>
+    <div class="mess-card reveal" style="--rot:-0.6deg">
+      <span class="tag">Clientes</span>
+      "Aceros del Sur SA"<br>
+      "ACEROS DEL SUR"<br>
+      "Aceros Sur (ex Metalfer)"<br>
+      <span style="opacity:.6">→ ¿es el mismo cliente?</span>
+    </div>
+    <div class="mess-card reveal" style="--rot:1deg">
+      <span class="tag">Sistemas</span>
+      ERP dice stock: <b>240</b><br>
+      Planilla del depósito: <b>180</b><br>
+      WhatsApp del encargado: <b>"quedan pocas"</b>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FALLA ============ -->
+<section id="falla">
+  <div class="kicker-row reveal">
+    <span class="num">02</span>
+    <span class="eyebrow" style="margin:0">Por qué la IA tropieza acá</span>
+  </div>
+  <h2 class="display reveal">
+    Conectar la IA directo a ese caos <span class="thin">no la hace más inteligente.</span>
+  </h2>
+  <p class="lede reveal">
+    La IA generativa es extraordinaria interpretando lenguaje y contexto — pero no adivina cuál de tus tres versiones de un dato es la correcta. Cuando el dato de entrada es ambiguo, la respuesta también lo es.
+  </p>
+
+  <div class="chat-mock reveal">
+    <div class="bubble user">¿Cuánto stock real tenemos de válvulas 3/4"?</div>
+    <div class="bubble ai">
+      <span class="flag">⚠ Respuesta poco confiable</span>
+      Según los registros disponibles, contás con aproximadamente 240 unidades — aunque hay menciones de otras cantidades en fuentes distintas y no puedo confirmar cuál está actualizada.
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRANSFORMACIÓN (signature) ============ -->
+<section id="transformacion">
+  <div class="transform-copy">
+    <div class="kicker-row reveal">
+      <span class="num">03</span>
+      <span class="eyebrow" style="margin:0">El paso que cambia todo</span>
+    </div>
+    <h2 class="display reveal">
+      Estandarizar es traducir tu empresa <span class="thin">a un solo idioma.</span>
+    </h2>
+    <p class="lede reveal">
+      Un mismo producto, un mismo cliente, una misma fecha — nombrados siempre igual, en un solo lugar de verdad. Desplazate lento: esto es, literalmente, lo que hacemos con tus datos antes de sumar cualquier IA.
+    </p>
+  </div>
+
+  <div id="canvas-wrap">
+    <canvas id="transformCanvas"></canvas>
+    <div class="transform-label" id="transformLabel">Datos dispersos, sin estructura</div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</section>
+
+<!-- ============ RESULTADO ============ -->
+<section id="resultado">
+  <div class="kicker-row reveal">
+    <span class="num">04</span>
+    <span class="eyebrow" style="margin:0">Lo que se habilita después</span>
+  </div>
+  <h2 class="display reveal">
+    Con el dato ordenado, <span class="thin">la IA por fin tiene con qué trabajar.</span>
+  </h2>
+  <p class="lede reveal">
+    Estos son casos reales de lo que se puede construir sobre una base de datos limpia y estandarizada — no antes.
+  </p>
+
+  <div class="cases">
+    <div class="case reveal">
+      <span class="idx">01 · Agentes</span>
+      <h3>Agente de preventa por WhatsApp</h3>
+      <p>Responde consultas técnicas y arma borradores de cotización leyendo tu ERP en tiempo real — porque el ERP ya tiene un solo nombre por producto.</p>
+      <div class="before-after"><span class="before">Antes: dudaba</span><span class="after">Después: resuelve</span></div>
+    </div>
+    <div class="case reveal">
+      <span class="idx">02 · BI</span>
+      <h3>Dashboards que no se contradicen</h3>
+      <p>Un tablero de stock, ventas o producción que muestra un único número por dato — porque ese número ya no tiene tres versiones dando vueltas.</p>
+      <div class="before-after"><span class="before">Antes: 3 fuentes</span><span class="after">Después: 1 verdad</span></div>
+    </div>
+    <div class="case reveal">
+      <span class="idx">03 · Automatización</span>
+      <h3>Procesos que corren solos</h3>
+      <p>Reportes diarios, alertas de stock crítico o seguimiento de pedidos, automatizados de punta a punta sin intervención manual para "traducir" datos.</p>
+      <div class="before-after"><span class="before">Antes: manual</span><span class="after">Después: automático</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CIERRE ============ -->
+<section id="cierre">
+  <svg class="logo-mark reveal" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="100" cy="100" r="92" stroke="#359A4F" stroke-width="8"/>
+    <path d="M45 70 L65 135 L85 85 L100 135 L115 85 L135 135 L155 70" stroke="#4871B1" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <circle cx="65" cy="108" r="7" fill="#359A4F"/>
+    <circle cx="100" cy="118" r="7" fill="#359A4F"/>
+    <circle cx="135" cy="108" r="7" fill="#359A4F"/>
+    <line x1="65" y1="108" x2="100" y2="118" stroke="#359A4F" stroke-width="4"/>
+    <line x1="100" y1="118" x2="135" y2="108" stroke="#359A4F" stroke-width="4"/>
+  </svg>
+  <span class="eyebrow reveal">Witdata · Partner certificado Anthropic (Claude)</span>
+  <h2 class="display reveal">
+    Empecemos por lo que sostiene todo lo demás: <span class="thin">tu dato.</span>
+  </h2>
+  <p class="lede reveal">
+    Un diagnóstico inicial nos alcanza para mostrarte dónde están las inconsistencias en tus sistemas actuales y qué tan lejos o cerca estás de poder usar IA de verdad.
+  </p>
+  <div class="cierre-cta reveal">
+    <a href="https://witdata.com.ar" class="btn primary" target="_blank" rel="noopener">Pedir diagnóstico de datos</a>
+    <a href="https://witdata.com.ar" class="btn ghost" target="_blank" rel="noopener">Conocer Witdata →</a>
+  </div>
+  <footer>WITDATA · Buenos Aires, Argentina · witdata.com.ar</footer>
+</section>
+
+<script>
+/* ============================================================
+   1) Rail de navegación + scroll reveal
+============================================================ */
+const sections = [...document.querySelectorAll('section')];
+const dots = [...document.querySelectorAll('#rail .dot')];
+
+dots.forEach(d=>{
+  d.addEventListener('click', ()=>{
+    document.getElementById(d.dataset.target).scrollIntoView({behavior:'smooth'});
+  });
+});
+
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const idx = sections.indexOf(e.target);
+      dots.forEach(d=>d.classList.remove('active'));
+      if(dots[idx]) dots[idx].classList.add('active');
+    }
+  });
+},{threshold:0.5});
+sections.forEach(s=>io.observe(s));
+
+const revealObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('in');
+    }
+  });
+},{threshold:0.15});
+document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+
+/* ============================================================
+   2) HERO — partículas ambientales caóticas (dato disperso)
+============================================================ */
+(function(){
+  const canvas = document.getElementById('particle-hero');
+  const ctx = canvas.getContext('2d');
+  let w,h,particles;
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize(){
+    w = canvas.width = canvas.offsetWidth * devicePixelRatio;
+    h = canvas.height = canvas.offsetHeight * devicePixelRatio;
+  }
+  function init(){
+    resize();
+    const count = Math.floor((w*h)/38000);
+    particles = Array.from({length:count}, ()=>({
+      x:Math.random()*w, y:Math.random()*h,
+      vx:(Math.random()-0.5)*0.25, vy:(Math.random()-0.5)*0.25,
+      r:Math.random()*1.6+0.6,
+      c: Math.random()>0.5 ? '72,113,177' : '53,154,79'
+    }));
+  }
+  function step(){
+    ctx.clearRect(0,0,w,h);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>w) p.vx*=-1;
+      if(p.y<0||p.y>h) p.vy*=-1;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(${p.c},0.5)`;
+      ctx.fill();
+    });
+    // conexiones sutiles
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const a=particles[i], b=particles[j];
+        const d = Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<90*devicePixelRatio){
+          ctx.strokeStyle = `rgba(150,170,200,${0.06*(1-d/(90*devicePixelRatio))})`;
+          ctx.lineWidth=1;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        }
+      }
+    }
+    if(!prefersReduced) requestAnimationFrame(step);
+  }
+  window.addEventListener('resize', init);
+  init();
+  if(!prefersReduced){ step(); } else { step(); ctx; }
+})();
+
+/* ============================================================
+   3) SIGNATURE MOMENT — el dato caótico se ordena en el
+      isólogo real de Witdata (W + línea de datos) al hacer scroll
+============================================================ */
+(function(){
+  const canvas = document.getElementById('transformCanvas');
+  const ctx = canvas.getContext('2d');
+  const wrap = document.getElementById('canvas-wrap');
+  const section = document.getElementById('transformacion');
+  const label = document.getElementById('transformLabel');
+  const progressFill = document.getElementById('progressFill');
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W,H,DPR;
+  function resize(){
+    DPR = Math.min(devicePixelRatio,2);
+    W = canvas.width = wrap.offsetWidth*DPR;
+    H = canvas.height = wrap.offsetHeight*DPR;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // --- Target shape: isólogo Witdata (W + línea de datos con 4 nodos) ---
+  // Definimos puntos target normalizados (0..1) sobre un lienzo cuadrado
+  // centrado, luego escalamos a W/H.
+  function buildTargets(){
+    const pts = [];
+    // Trazo de la W (forma clásica: baja-sube-baja-sube), muestreado
+    const wSegs = [
+      [0.30,0.30, 0.415,0.68],
+      [0.415,0.68, 0.50,0.40],
+      [0.50,0.40, 0.585,0.68],
+      [0.585,0.68, 0.70,0.30]
+    ];
+    wSegs.forEach(([x1,y1,x2,y2])=>{
+      const n = 20;
+      for(let i=0;i<=n;i++){
+        const t=i/n;
+        pts.push({tx:x1+(x2-x1)*t, ty:y1+(y2-y1)*t, kind:'w'});
+      }
+    });
+    // Línea de datos con 4 nodos (verde), atravesando la W
+    const nodes = [[0.335,0.565],[0.455,0.505],[0.575,0.565],[0.695,0.505]];
+    for(let i=0;i<nodes.length-1;i++){
+      const [x1,y1]=nodes[i], [x2,y2]=nodes[i+1];
+      const n=10;
+      for(let k=0;k<=n;k++){
+        const t=k/n;
+        pts.push({tx:x1+(x2-x1)*t, ty:y1+(y2-y1)*t, kind:'line'});
+      }
+    }
+    nodes.forEach(([x,y])=>{
+      for(let a=0;a<8;a++){
+        const ang=(a/8)*Math.PI*2;
+        pts.push({tx:x+Math.cos(ang)*0.014, ty:y+Math.sin(ang)*0.014, kind:'node'});
+      }
+    });
+    // Círculo contenedor (verde), sutil
+    const cx=0.5, cy=0.5, r=0.30;
+    for(let a=0;a<70;a++){
+      const ang=(a/70)*Math.PI*2;
+      pts.push({tx:cx+Math.cos(ang)*r, ty:cy+Math.sin(ang)*r, kind:'circle'});
+    }
+    return pts;
+  }
+  const targets = buildTargets();
+
+  const particles = targets.map(t=>({
+    x:Math.random(), y:Math.random(),
+    tx:t.tx, ty:t.ty, kind:t.kind,
+    seed:Math.random()*1000
+  }));
+
+  const colorFor = k => k==='w' ? '72,113,177' : k==='line' ? '53,154,79' : k==='node' ? '53,154,79' : '182,198,224';
+  const sizeFor  = k => k==='node' ? 2.6 : k==='circle' ? 1.1 : 1.9;
+
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function ease(t){return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;}
+
+  let progress = 0; // 0 = caos, 1 = orden total
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const p = ease(progress);
+
+    particles.forEach(pt=>{
+      // posición caótica animada (leve jitter permanente)
+      const jt = performance.now()/1000;
+      const chaosX = 0.5 + Math.sin(jt*0.6+pt.seed)*0.46;
+      const chaosY = 0.5 + Math.cos(jt*0.7+pt.seed*1.3)*0.46;
+
+      const cx = lerp(chaosX, pt.tx, p);
+      const cy = lerp(chaosY, pt.ty, p);
+
+      // Mapeamos sobre un cuadrado centrado para no distorsionar el isólogo
+      const side = Math.min(W,H);
+      const offX = (W-side)/2, offY = (H-side)/2;
+      const px = offX + cx*side, py = offY + cy*side;
+      const r = sizeFor(pt.kind)*DPR*(0.6+0.4*p);
+      ctx.beginPath();
+      ctx.arc(px,py,r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(${colorFor(pt.kind)},${0.35+0.55*p})`;
+      ctx.fill();
+    });
+
+    // conexiones entre nodos de la línea de datos cuando p es alto
+    if(p>0.7){
+      const nodePts = particles.filter(pt=>pt.kind==='node');
+      // agrupar cada 8 puntos en un nodo (centro)
+    }
+
+    if(!prefersReduced) requestAnimationFrame(draw);
+  }
+  if(prefersReduced){
+    progress = 1; draw();
+  } else {
+    draw();
+  }
+
+  function onScroll(){
+    const rect = section.getBoundingClientRect();
+    const total = rect.height - window.innerHeight;
+    const scrolled = Math.min(Math.max(-rect.top, 0), total);
+    progress = total>0 ? scrolled/total : 0;
+    progressFill.style.width = (progress*100).toFixed(1)+'%';
+
+    if(progress < 0.15) label.textContent = 'Datos dispersos, sin estructura';
+    else if(progress < 0.55) label.textContent = 'Estandarizando nombres, formatos y fuentes';
+    else if(progress < 0.9) label.textContent = 'Una sola versión de la verdad emergiendo';
+    else label.textContent = 'Listo para que la IA razone sobre esto';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>
